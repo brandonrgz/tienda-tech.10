@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Premium 12.0</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f5f5f7;
+}
+
+header{
+background:#111;
+color:white;
+padding:20px;
+text-align:center;
+font-size:26px;
+}
+
+.top{
+display:flex;
+justify-content:space-between;
+padding:10px 20px;
+background:white;
+}
+
+#search{
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+.container{
+display:grid;
+grid-template-columns:3fr 1fr;
+}
+
+.products{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:white;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+text-align:center;
+overflow:hidden;
+padding-bottom:10px;
+}
+
+.card img{
+width:100%;
+height:180px;
+object-fit:cover;
+}
+
+button{
+border:none;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.add{background:#0071e3;color:white}
+.remove{background:red;color:white}
+
+.cart{
+background:white;
+padding:20px;
+border-left:1px solid #ddd;
+}
+
+.admin{
+background:#eee;
+padding:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>TECH PREMIUM 12.0</header>
+
+<div class="top">
+<input id="search" placeholder="Buscar producto">
+<div>🛒 <span id="count">0</span></div>
+</div>
+
+<div class="container">
+
+<div>
+
+<div class="products" id="products"></div>
+
+<div class="admin">
+
+<h3>Panel administrador</h3>
+
+<input id="name" placeholder="Nombre"><br><br>
+<input id="price" placeholder="Precio"><br><br>
+<input id="image" placeholder="URL Imagen"><br><br>
+
+<button onclick="addProduct()">Agregar producto</button>
+
+</div>
+
+</div>
+
+<div class="cart">
+
+<h3>Carrito</h3>
+
+<div id="cart-items"></div>
+
+<p>Total: $<span id="total">0</span></p>
+
+<button onclick="buyWhatsApp()">Comprar por WhatsApp</button>
+
+</div>
+
+</div>
+
+<script>
+
+let products=JSON.parse(localStorage.getItem("products"))||[
+{name:"AirPods OEM",price:280,img:"https://source.unsplash.com/400x400/?airpods"},
+{name:"USB 32GB",price:90,img:"https://source.unsplash.com/400x400/?usb"}
+]
+
+let cart=[]
+let total=0
+
+function saveProducts(){
+localStorage.setItem("products",JSON.stringify(products))
+}
+
+function renderProducts(){
+
+let container=document.getElementById("products")
+container.innerHTML=""
+
+let search=document.getElementById("search").value.toLowerCase()
+
+products
+.filter(p=>p.name.toLowerCase().includes(search))
+.forEach(p=>{
+
+let card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<img src="${p.img}">
+<h3>${p.name}</h3>
+<p>$${p.price}</p>
+
+<button class="add">Agregar</button>
+
+`
+
+card.querySelector(".add").onclick=()=>addToCart(p)
+
+container.appendChild(card)
+
+})
+
+}
+
+function addToCart(p){
+
+cart.push(p)
+total+=Number(p.price)
+
+updateCart()
+
+}
+
+function removeItem(index){
+
+total-=cart[index].price
+cart.splice(index,1)
+
+updateCart()
+
+}
+
+function updateCart(){
+
+document.getElementById("count").textContent=cart.length
+document.getElementById("total").textContent=total
+
+let items=document.getElementById("cart-items")
+items.innerHTML=""
+
+cart.forEach((p,i)=>{
+
+let div=document.createElement("div")
+
+div.innerHTML=`
+${p.name} - $${p.price}
+<button class="remove">X</button>
+`
+
+div.querySelector(".remove").onclick=()=>removeItem(i)
+
+items.appendChild(div)
+
+})
+
+}
+
+function addProduct(){
+
+let name=document.getElementById("name").value
+let price=document.getElementById("price").value
+let img=document.getElementById("image").value
+
+products.push({name,price,img})
+
+saveProducts()
+renderProducts()
+
+}
+
+function buyWhatsApp(){
+
+let text="Hola quiero comprar:%0A"
+
+cart.forEach(p=>{
+text+=p.name+" - $"+p.price+"%0A"
+})
+
+text+="Total: $"+total
+
+window.open("https://wa.me/19563275461?text="+text)
+
+}
+
+document.getElementById("search").addEventListener("input",renderProducts)
+
+renderProducts()
+
+</script>
+
+</body>
+
+</html>
